@@ -40,36 +40,32 @@ class Order extends Application {
         $this->data['pagebody'] = 'show_menu';
         $this->data['order_num'] = $order_num;
         //FIXME
-
-        $this->data['datetime'] = $order->date;
-        $this->data['num'] = $order->num;
-        $this->data['total'] = $order->total;
-
+       $this->data['title'] = 'Order: #' . $order_num . ' ($' . $order->total . ')';
+     
         // Make the columns
         $this->data['meals'] = $this->make_column('m', $order_num);
         $this->data['drinks'] = $this->make_column('d', $order_num);
         $this->data['sweets'] = $this->make_column('s', $order_num);
-        $this->data['title'] = 'Order: #' . $order_num . ' || Total: $' . $order->total;
+        
 
         $this->render();
     }
 
-    // make a menu ordering column
+    // make a menu ordering column    
     function make_column($category, $order_num) {
         //FIXME
-        $column = $this->menu->some('category', $category);
+        $items = $this->menu->some('category', $category);
 
-        foreach($column as $item){
+        foreach($items as $item){
             $item->order_num = $order_num;
         }
-        return $column;
+        return $items;
     }
 
     // add an item to an order
     function add($order_num, $item) {
         //FIXME
         $this->orders->add_item($order_num, $item);
-
         redirect('/order/display_menu/' . $order_num);
     }
 
@@ -79,18 +75,25 @@ class Order extends Application {
         $this->data['pagebody'] = 'show_order';
         $this->data['order_num'] = $order_num;
         //FIXME
+        /* $this->data['total'] = number_format($this->orders->total($order_num),2);   
 
-        $order = $this->orders->get($order_num);
-
-        $this->data['total'] = $order->total;
-        $this->data['items'] = $this->orders->details($order_num);
-
+       $items = $this->orderitems->group($order_num);
+       foreach($items as $item)
+       {
+           $menuitem = $this->menu->get($item->item);
+           $item->code = $menuitem->name;
+       }
+       $this->data['items'] = $items;*/
+        // or anther way
+         // $order = $this->orders->get($order_num);
+         $this->data['items'] = $this->orders->details($order_num);
+       
         if($this->orders->validate($order_num)){
             $this->data['okornot'] = "";
-            $this->data['okornothref'] = "/order/proceed/" . $order_num;
+            $this->data['okornot'] = "/order/proceed/" . $order_num;
         }else{
             $this->data['okornot'] = "disabled";
-            $this->data['okornothref'] = "#";
+            $this->data['okornot'] = "#";
         }
 
         $this->render();
