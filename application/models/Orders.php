@@ -38,7 +38,8 @@ class Orders extends MY_Model {
     }
 
     // calculate the total for an order
-    // if you are proceeding with order
+    // if you are proceeding with order 
+    // select order items from orderitem where menu code is matching from menu table and put this in array
     function total($num) {
         $this->db->from('orderitems');
         $this->db->join('menu', 'menu.code = orderitems.item');
@@ -48,17 +49,18 @@ class Orders extends MY_Model {
         $result = 0;
         foreach($items as $item){
             $result += $item['quantity'] * $item['price'];
+           
         } 
-
-        return $result;
+        return $result; // found total for order
     }
 
     // retrieve the details for an order
+    // details include all item make a group of similar code number 
     function details($num) {
         $CI = &get_instance();
         $CI->load->model('orderitems');
         $orderItems = $this->orderitems->group($num);
-
+            // select item where menu table where code is matching item and return them
         foreach($orderItems as $item){
             $this->db->from('menu');
             $this->db->where('code', $item->item);
@@ -68,17 +70,17 @@ class Orders extends MY_Model {
         return $orderItems;        
     }
 
-    // cancel an order
+    // cancel an order // delete item if not proceeded  
     function flush($num) {
         $this->db->from('orderitems');
         $this->db->where('order', $num);
-        $query = $this->db->get();
-        $query = $query->result_array();
+        $data = $this->db->get();
+        $data1 = $data->result_array();
 
         $CI = &get_instance();
         $CI->load->model('orderitems');
 
-        foreach($query as $item){
+        foreach($data1 as $item){
             $this->orderitems->delete($num, $item['item']);
         }
 
@@ -87,11 +89,12 @@ class Orders extends MY_Model {
 
     // validate an order
     // it must have at least one item from each category
-    // return true if  all categories combination true.
+    // return true if  all categories combination true. 
+    // assume at starting all values are false 
     function validate($num) {
-        $boolMeal = false;
-        $boolDrink = false;
-        $boolSweet = false;
+        $boolCatm = false;
+        $boolCatd = false;
+        $boolCats = false;
         $this->db->from('orderitems');
         $this->db->where('order', $num);
         $data = $this->db->get();
@@ -104,15 +107,15 @@ class Orders extends MY_Model {
             $menuItem = $menuItem->result_array();
             
             if($menuItem[0]['category'] == "m"){
-                $boolMeal = true;
+                $boolCatm = true;
             }else if($menuItem[0]['category'] == "d"){
-                $boolDrink = true;
+                $boolCatd = true;
             }elseif($menuItem[0]['category'] == "s"){
-                $boolSweet = true;
+                $boolCats = true;
             }
         }
-
-        return ($boolMeal && $boolDrink && $boolSweet);
+         // proceed only of all are true
+        return ($boolCatm && $boolCatd && $boolCats);
     }
 
 }
