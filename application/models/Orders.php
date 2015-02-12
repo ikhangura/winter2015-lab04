@@ -10,13 +10,15 @@ class Orders extends MY_Model {
     // constructor
     function __construct() {
         parent::__construct('orders', 'num');
+        $CI = &get_instance();
+        $CI->load->model('orderitems');
     }
 
     // add an item to an order 
     // update database with new order combination
     function add_item($num, $code) {
     
-       $this->db->from('orderitems');
+        $this->db->from('orderitems');
         $this->db->where('order', $num);
         $this->db->where('item', $code);
         $data = $this->db->get();
@@ -72,20 +74,12 @@ class Orders extends MY_Model {
 
     // cancel an order // delete item if not proceeded  
     function flush($num) {
-        $this->db->from('orderitems');
-        $this->db->where('order', $num);
-        $data = $this->db->get();
-        $data1 = $data->result_array();
-
-        $CI = &get_instance();
-        $CI->load->model('orderitems');
-
-        foreach($data1 as $item){
-            $this->orderitems->delete($num, $item['item']);
-        }
-
-
-    }
+// if the order exists, delete all related orderitems
+if($this->exists($num))
+{
+$items = $this->orderitems->delete_some($num);
+}
+}
 
     // validate an order
     // it must have at least one item from each category
@@ -119,3 +113,4 @@ class Orders extends MY_Model {
     }
 
 }
+
