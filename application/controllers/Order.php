@@ -40,7 +40,7 @@ class Order extends Application {
         $this->data['pagebody'] = 'show_menu';
         $this->data['order_num'] = $order_num;
         //FIXME
-       $this->data['title'] = 'Order: #' . $order_num . ' ($' . $order->total . ')';
+       $this->data['title'] = 'Order: #' . $order_num . '($' . $order->total . ')';
      
         // Make the columns
         $this->data['meals'] = $this->make_column('m', $order_num);
@@ -51,7 +51,7 @@ class Order extends Application {
         $this->render();
     }
 
-    // make a menu ordering column    
+    // make a menu ordering column
     function make_column($category, $order_num) {
         //FIXME
         $items = $this->menu->some('category', $category);
@@ -66,6 +66,7 @@ class Order extends Application {
     function add($order_num, $item) {
         //FIXME
         $this->orders->add_item($order_num, $item);
+
         redirect('/order/display_menu/' . $order_num);
     }
 
@@ -75,25 +76,17 @@ class Order extends Application {
         $this->data['pagebody'] = 'show_order';
         $this->data['order_num'] = $order_num;
         //FIXME
-        /* $this->data['total'] = number_format($this->orders->total($order_num),2);   
+        // get a new order first and find its total and also validate it  
+        $newOrder = $this->orders->get($order_num);
+        $this->data['total'] = $newOrder->total;
+        $this->data['items'] = $this->orders->details($order_num);
 
-       $items = $this->orderitems->group($order_num);
-       foreach($items as $item)
-       {
-           $menuitem = $this->menu->get($item->item);
-           $item->code = $menuitem->name;
-       }
-       $this->data['items'] = $items;*/
-        // or anther way
-         // $order = $this->orders->get($order_num);
-         $this->data['items'] = $this->orders->details($order_num);
-       
         if($this->orders->validate($order_num)){
             $this->data['okornot'] = "";
             $this->data['okornot'] = "/order/proceed/" . $order_num;
         }else{
-            $this->data['okornot'] = "disabled";
-            $this->data['okornot'] = "#";
+            $this->data['okornot'] = ""; // no need to procees
+          
         }
 
         $this->render();
@@ -102,11 +95,10 @@ class Order extends Application {
     // proceed with checkout
     function proceed($order_num) {
         //FIXME
-        $setArray = array("status" => 'c');
-
+        $Array = array("status" => 'c');
         $this->db->from('orders');
         $this->db->where('num', $order_num);
-        $this->db->update('orders', $setArray);
+        $this->db->update('orders', $Array);
 
         redirect('/');
     }
@@ -115,11 +107,10 @@ class Order extends Application {
     function cancel($order_num) {
         //FIXME
         $this->orders->flush($order_num);
-        $setArray = array("status" => 'x');
-
+        $Array = array("status" => 'x');
         $this->db->from('orders');
         $this->db->where('num', $order_num);
-        $this->db->update('orders', $setArray);
+        $this->db->update('orders', $Array);
         redirect('/');
     }
 
