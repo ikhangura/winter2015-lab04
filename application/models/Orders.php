@@ -74,7 +74,6 @@ class Orders extends MY_Model {
 
     // cancel an order // delete item if not proceeded  
     function flush($num) {
-// if the order exists, delete all related orderitems
 if($this->exists($num))
 {
 $items = $this->orderitems->delete_some($num);
@@ -86,9 +85,9 @@ $items = $this->orderitems->delete_some($num);
     // return true if  all categories combination true. 
     // assume at starting all values are false 
     function validate($num) {
-        $boolCatm = false;
-        $boolCatd = false;
-        $boolCats = false;
+        $boolCatm = 0;
+        $boolCatd = 0;
+        $boolCats = 0;
         $this->db->from('orderitems');
         $this->db->where('order', $num);
         $data = $this->db->get();
@@ -101,11 +100,11 @@ $items = $this->orderitems->delete_some($num);
             $menuItem = $menuItem->result_array();
             
             if($menuItem[0]['category'] == "m"){
-                $boolCatm = true;
+                $boolCatm = 1;
             }else if($menuItem[0]['category'] == "d"){
-                $boolCatd = true;
+                $boolCatd = 1;
             }elseif($menuItem[0]['category'] == "s"){
-                $boolCats = true;
+                $boolCats = 1;
             }
         }
          // proceed only of all are true
